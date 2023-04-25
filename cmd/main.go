@@ -40,8 +40,7 @@ func ReadFile(r io.Reader) {
 	var totalBalance float64
 	/*
 		var NumbreOfTransactions int
-		var AverageDebitAmount float64
-		var AverageCreditAmount float64
+
 	*/
 	csvReader := csv.NewReader(r)
 
@@ -51,6 +50,8 @@ func ReadFile(r io.Reader) {
 	header := false
 	var AverageCreditAmountData []float64
 	var AverageDebitAmountData []float64
+
+	transactionsPerMonth := make(map[string]int)
 	for {
 
 		record, err := csvReader.Read()
@@ -81,6 +82,8 @@ func ReadFile(r io.Reader) {
 			AverageCreditAmountData = append(AverageCreditAmountData, cleanTransactionAmount)
 		}
 
+		getTransactionsPerMonth(transactionsPerMonth, record[1])
+
 	}
 
 	creditAverage := average(AverageCreditAmountData)
@@ -89,7 +92,12 @@ func ReadFile(r io.Reader) {
 	totalBalance = math.Round((totalCreditTransactions-totalDebitTransactions)*100) / 100
 	//return math.Round((a+b)*100) / 100
 	//redondear esta vaina o hacerlo perfecto solo 2 digitos
-	fmt.Println(totalBalance, creditAverage, debitAverage)
+	fmt.Println("total", totalBalance)
+
+	fmt.Printf("average credit amount: %.2f\n", creditAverage)
+	fmt.Printf("average debit amount: -%.2f\n", debitAverage)
+
+	fmt.Println(transactionsPerMonth)
 }
 
 // funcion que tetorna si un string de numer so es negativo o positivoas
@@ -122,44 +130,35 @@ func cleanAndParseTransaction(transaction string) (float64, error) {
 	return value, nil
 }
 
-/*
+func getMonth(date string) string {
+	parts := strings.Split(date, "/")
+	month, _ := strconv.Atoi(parts[0])
+	months := []string{
+		"Enero",
+		"Febrero",
+		"Marzo",
+		"Abril",
+		"Mayo",
+		"Junio",
+		"Julio",
+		"Agosto",
+		"Septiembre",
+		"Octubre",
+		"Noviembre",
+		"Diciembre"}
 
-	// Read the file line by line
-	scanner := bufio.NewScanner(file)
-	var balance float64
-	var credits float64
-	var debits float64
-	for scanner.Scan() {
-		transaction := scanner.Text()
-		amount, err := strconv.ParseFloat(strings.TrimSpace(transaction[1:]), 64)
-		if err != nil {
-			log.Printf("Error parsing transaction amount '%v': %v", transaction, err)
-			continue
-		}
-		if transaction[0] == '+' {
-			credits += amount
-			balance += amount
-		} else if transaction[0] == '-' {
-			debits += amount
-			balance -= amount
-		} else {
-			log.Printf("Invalid transaction '%v'", transaction)
-			continue
-		}
+	return months[month-1]
+}
+
+func getTransactionsPerMonth(monthMap map[string]int, date string) map[string]int {
+
+	month := getMonth(date)
+
+	if _, ok := monthMap[month]; ok {
+		monthMap[month]++
+		return monthMap
 	}
+	monthMap[month] = 1
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	// Format the email body
-	subject := "Transaction Summary"
-	body := fmt.Sprintf("Credits: %.2f\nDebits: %.2f\nBalance: %.2f", credits, debits, balance)
-
-	// Send the email
-	err = sendEmail(subject, body)
-	if err != nil {
-		log.Fatalf("Error sending email: %v", err)
-	}
-	fmt.Println("Email sent successfully")
-}*/
+	return monthMap
+}
