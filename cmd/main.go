@@ -5,23 +5,21 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ansel1/merry/v2"
 )
 
-//var fileTest := "test.csv"
-/*
-Total balance is 39.74
-Number of transactions in July: 2
-Number of transactions in August: 2
+var MAX_GOROUTINES = 10
 
-Average debit amount: -15.38
-Average credit amount: 35.25
-*/
+type aux struct {
+	isNegative bool
+	amount     float64
+	month      string
+}
 
 func main() {
 
@@ -37,67 +35,89 @@ func main() {
 }
 func ReadFile(r io.Reader) {
 
-	var totalBalance float64
-	/*
-		var NumbreOfTransactions int
-
-	*/
 	csvReader := csv.NewReader(r)
 
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//elimina el header
+	records = records[1:]
+
+	var totalBalance float64
 	var totalCreditTransactions float64
 	var totalDebitTransactions float64
-
-	header := false
 	var AverageCreditAmountData []float64
 	var AverageDebitAmountData []float64
 
-	transactionsPerMonth := make(map[string]int)
-	for {
+	// Create worker pool
+	var wg sync.WaitGroup
+	jobs := make(chan []string, len(records))
+	results := make(chan aux, len(records))
 
-		record, err := csvReader.Read()
+	for i := 0; i < MAX_GOROUTINES; i++ {
+		wg.Add(1)
+		go worker(jobs, results, &wg)
+	}
 
-		if err == io.EOF {
-			break
-		}
+	// Send jobs to workers
+	for _, record := range records {
+		jobs <- record
+	}
+	close(jobs)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	monthMap := make(map[string]int)
 
-		if !header {
-			header = true
+	// Collect results from workers
+	for i := 0; i < len(records); i++ {
+		result := <-results
+
+		getTransactionsPerMonth(monthMap, result.month)
+
+		if result.isNegative {
+			totalBalance -= result.amount
+			totalDebitTransactions += result.amount
+			AverageDebitAmountData = append(AverageDebitAmountData, result.amount)
 			continue
 		}
 
-		cleanTransactionAmount, err := cleanAndParseTransaction(record[2])
-		if err != nil {
-			log.Fatal(err)
-		}
-		ok := isNegative(record[2])
-		if ok {
-			totalDebitTransactions += cleanTransactionAmount
-			AverageDebitAmountData = append(AverageDebitAmountData, cleanTransactionAmount)
-		} else {
-			totalCreditTransactions += cleanTransactionAmount
-			AverageCreditAmountData = append(AverageCreditAmountData, cleanTransactionAmount)
-		}
-
-		getTransactionsPerMonth(transactionsPerMonth, record[1])
+		totalBalance += result.amount
+		totalCreditTransactions += result.amount
+		AverageCreditAmountData = append(AverageCreditAmountData, result.amount)
 
 	}
 
-	creditAverage := average(AverageCreditAmountData)
-	debitAverage := average(AverageDebitAmountData)
+	wg.Wait()
 
-	totalBalance = math.Round((totalCreditTransactions-totalDebitTransactions)*100) / 100
-	//return math.Round((a+b)*100) / 100
-	//redondear esta vaina o hacerlo perfecto solo 2 digitos
-	fmt.Println("total", totalBalance)
+	fmt.Println("total Balance", totalBalance)
+	fmt.Println("total Debit Transactions", totalDebitTransactions)
+	fmt.Println("total Credit Transactions", totalCreditTransactions)
+	fmt.Println("Average Debit Amount Data", average(AverageDebitAmountData))
+	fmt.Println("Average Credit Amount Data", average(AverageCreditAmountData))
+	fmt.Println("Number of transactions month", monthMap)
 
-	fmt.Printf("average credit amount: %.2f\n", creditAverage)
-	fmt.Printf("average debit amount: -%.2f\n", debitAverage)
+}
 
-	fmt.Println(transactionsPerMonth)
+func worker(jobs <-chan []string, results chan<- aux, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for job := range jobs {
+
+		cleanTransactionAmount, err := cleanAndParseTransaction(job[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		ok := isNegative(job[2])
+
+		//guardar en base de datos
+
+		results <- aux{
+			isNegative: ok,
+			amount:     cleanTransactionAmount,
+			month:      getMonth(job[1]),
+		}
+	}
 }
 
 // funcion que tetorna si un string de numer so es negativo o positivoas
@@ -150,9 +170,7 @@ func getMonth(date string) string {
 	return months[month-1]
 }
 
-func getTransactionsPerMonth(monthMap map[string]int, date string) map[string]int {
-
-	month := getMonth(date)
+func getTransactionsPerMonth(monthMap map[string]int, month string) map[string]int {
 
 	if _, ok := monthMap[month]; ok {
 		monthMap[month]++
