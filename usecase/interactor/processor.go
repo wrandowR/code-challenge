@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -105,7 +106,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	}
 
 	transactionEmailData := model.TransactionEmail{
-		TotalBalance:        totalBalance,
+		TotalBalance:        math.Round(totalBalance*100) / 100,
 		Transactions:        TransactionInAMounth,
 		AverageDebitAmount:  average(AverageDebitAmountData),
 		AverageCreditAmount: average(AverageCreditAmountData),

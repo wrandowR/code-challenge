@@ -21,9 +21,9 @@ type config struct {
 
 	SMTP struct {
 		//smtp for testing only
-		Host     string `env:"SMTP_HOST,default=smtp.freesmtpservers.com"`
-		Port     int    `env:"SMTP_PORT,default=25"`
-		User     string `env:"SMTP_USER"`
+		Host     string `env:"SMTP_HOST,required"`
+		Port     int    `env:"SMTP_PORT,required"`
+		SMTPUser string `env:"SMTP_USER"`
 		Password string `env:"SMTP_PASSWORD"`
 	}
 }
