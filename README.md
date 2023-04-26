@@ -12,7 +12,9 @@ To make it easier to set these environment variables, it is recommended that you
 
 ### Run the following command to start the container:
 
-`` sh docker-compose up -d ``
+``` sh 
+docker-compose up -d 
+```
 
 
 Once the processing is complete, an email will be sent with the results.
