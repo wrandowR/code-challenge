@@ -95,6 +95,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	//enviar correo aca con resultados
 
+	//s.EmailSender.
 	fmt.Println("total Balance", totalBalance)
 	fmt.Println("total Debit Transactions", totalDebitTransactions)
 	fmt.Println("total Credit Transactions", totalCreditTransactions)
