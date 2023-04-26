@@ -1,10 +1,10 @@
-package service
+package interactor
 
 import (
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,22 +16,29 @@ import (
 	"github.com/wrandowR/code-challenge/usecase/service"
 )
 
-// FileProcessorService is a service that process a csv file
-type fileProcessorService struct {
+// fileProcessor is a service that process a csv file
+type fileProcessor struct {
 	DataStore   repository.Transactions
 	EmailSender service.EmailSender
 }
 
-func NewFileProcessorService(dataStorage repository.Transactions, emailSender service.EmailSender) *fileProcessorService {
-	return &fileProcessorService{
+func NewFileProcessor(dataStorage repository.Transactions, emailSender service.EmailSender) *fileProcessor {
+	return &fileProcessor{
 		DataStore:   dataStorage,
 		EmailSender: emailSender,
 	}
 }
 
-func (s *fileProcessorService) ProccesFile(r io.Reader) error {
+func (s *fileProcessor) ProccesFile(dir string) error {
 
-	csvReader := csv.NewReader(r)
+	// Open the file
+	file, err := os.Open(dir)
+	if err != nil {
+		return merry.Wrap(err)
+	}
+	defer file.Close()
+
+	csvReader := csv.NewReader(file)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {

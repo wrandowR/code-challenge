@@ -1,26 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/ansel1/merry/v2"
-	"github.com/wrandowR/code-challenge/internal/service"
+	"github.com/wrandowR/code-challenge/usecase/interactor"
+	"github.com/wrandowR/code-challenge/usecase/service"
 )
 
 func main() {
 
-	// Open the file
-	file, err := os.Open("../test.csv")
-	if err != nil {
-		log.Fatal(merry.Append(err, "Error opening file"))
+	emailSender := service.NewEmailSender()
+	processor := interactor.NewFileProcessor(nil, emailSender)
+
+	if err := processor.ProccesFile("transactions.csv"); err != nil {
+		log.Fatal(merry.Wrap(err))
 	}
 
-	service := service.NewFileProcessorService()
-
-	if err := service.ProccesFile(file); err != nil {
-		log.Fatal(merry.Append(err, "Error processing file"))
-	}
-
-	defer file.Close()
+	fmt.Println("Done")
 }
