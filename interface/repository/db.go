@@ -25,6 +25,7 @@ var TransactionRepository repository.Transactions = &transactionRepository{
 
 func (t *transactionRepository) Transactions(clientID string) ([]*model.Transaction, error) {
 
+	return nil, merry.New("not implemented")
 }
 
 func (t *transactionRepository) SaveTransaction(transaction *model.Transaction) (*model.Transaction, error) {
@@ -35,17 +36,12 @@ func (t *transactionRepository) SaveTransaction(transaction *model.Transaction) 
 		"country",
 		"price",
 		"currency").Vals(goqu.Vals{
-		beerRequest.ID,
-		beerRequest.Name,
-		beerRequest.Brewery,
-		beerRequest.Country,
-		beerRequest.Price,
-		beerRequest.Currency,
+		transaction.Amount,
 	}).Executor().Exec()
 
 	if err != nil {
 		return nil, merry.Wrap(err)
 	}
 
-	return beerRequest, nil
+	return &model.Transaction{}, nil
 }

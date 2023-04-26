@@ -11,17 +11,18 @@ import (
 
 	"github.com/ansel1/merry/v2"
 	"github.com/wrandowR/code-challenge/config"
-	"github.com/wrandowR/code-challenge/internal/domain/model"
-	repository "github.com/wrandowR/code-challenge/internal/interface"
+	"github.com/wrandowR/code-challenge/domain/model"
+	repository "github.com/wrandowR/code-challenge/usecase/repository"
+	"github.com/wrandowR/code-challenge/usecase/service"
 )
 
 // FileProcessorService is a service that process a csv file
 type fileProcessorService struct {
-	DataStore   repository.DataStorage
-	EmailSender repository.EmailSender
+	DataStore   repository.Transactions
+	EmailSender service.EmailSender
 }
 
-func NewFileProcessorService(dataStorage repository.DataStorage, emailSender repository.EmailSender) *fileProcessorService {
+func NewFileProcessorService(dataStorage repository.Transactions, emailSender service.EmailSender) *fileProcessorService {
 	return &fileProcessorService{
 		DataStore:   dataStorage,
 		EmailSender: emailSender,
