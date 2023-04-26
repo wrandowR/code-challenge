@@ -1,0 +1,14 @@
+database:
+  user: root
+  password: root
+  net: tcp
+  addr: 127.0.0.1:3306
+  dbname: 
+  allowNativePasswords: true
+  params:
+    parseTime: "true"
+
+MAX_GOROUTINES: 10
+
+server:
+  address: 8080
