@@ -5,6 +5,7 @@ import (
 	"html/template"
 
 	"github.com/ansel1/merry"
+	"github.com/wrandowR/code-challenge/config"
 	"github.com/wrandowR/code-challenge/domain/model"
 	"gopkg.in/gomail.v2"
 )
@@ -25,8 +26,8 @@ func NewEmailSender() EmailSender {
 
 func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "huffyh00@hotmail.com")
-	m.SetHeader("To", "huffyh00@hotmail.com")
+	m.SetHeader("From", config.FromEmail())
+	m.SetHeader("To", email)
 	m.SetHeader("Subject", "Summary of Transactions")
 
 	parseTemplate, err := s.parseTemplate(s.TransactionEmailTemplate, data)
@@ -37,7 +38,7 @@ func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) erro
 	m.SetBody("text/html", parseTemplate)
 
 	//Datos aca para el smtp de email
-	d := gomail.NewDialer("smtp.freesmtpservers.com", 25, "", "")
+	d := gomail.NewDialer(config.SMTPHost(), config.SMTPPort(), "", "")
 
 	if err := d.DialAndSend(m); err != nil {
 		return merry.Wrap(err)

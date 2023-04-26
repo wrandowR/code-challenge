@@ -18,6 +18,14 @@ type config struct {
 		Password string `env:"DATABASE_PASSWORD,required"`
 		DbName   string `env:"DATABASE_DB_NAME,required"`
 	}
+
+	SMTP struct {
+		//smtp for testing only
+		Host     string `env:"SMTP_HOST,default=smtp.freesmtpservers.com"`
+		Port     int    `env:"SMTP_PORT,default=25"`
+		User     string `env:"SMTP_USER"`
+		Password string `env:"SMTP_PASSWORD"`
+	}
 }
 
 var c config
@@ -61,6 +69,14 @@ func MaxGoroutines() int {
 
 func FromEmail() string {
 	return c.FromEmail
+}
+
+func SMTPHost() string {
+	return c.SMTP.Host
+}
+
+func SMTPPort() int {
+	return c.SMTP.Port
 }
 
 /*
