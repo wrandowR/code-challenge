@@ -26,8 +26,8 @@ func NewEmailSender() EmailSender {
 
 func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", config.FromEmail())
-	m.SetHeader("To", email)
+	m.SetHeader("From", "huffyh00@hotmail.com")
+	m.SetHeader("To", "huffyh00@hotmail.com")
 	m.SetHeader("Subject", "Summary of Transactions")
 
 	parseTemplate, err := s.parseTemplate(s.TransactionEmailTemplate, data)

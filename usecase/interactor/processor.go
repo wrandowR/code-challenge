@@ -2,6 +2,7 @@ package interactor
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -36,7 +37,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	if err != nil {
 		return merry.Wrap(err)
 	}
-	defer file.Close()
+	//defer file.Close()
 
 	csvReader := csv.NewReader(file)
 
@@ -73,6 +74,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	monthMap := make(map[string]int)
 
 	// Collect results from workers
+	fmt.Println(records)
 	for i := 0; i < len(records); i++ {
 		result := <-results
 
@@ -109,7 +111,9 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 		AverageCreditAmount: average(AverageCreditAmountData),
 	}
 
-	s.EmailSender.SendEmail("test", &transactionEmailData)
+	if err := s.EmailSender.SendEmail("test", &transactionEmailData); err != nil {
+		return merry.Wrap(err)
+	}
 	logrus.Info("Email sent")
 	return nil
 }

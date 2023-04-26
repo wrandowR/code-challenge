@@ -18,6 +18,10 @@ services:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: "secure_pass_here"
       DATABASE_DB_NAME: testingdb
+      SMTP_HOST: smtp.freesmtpservers.com
+      SMTP_PORT: 25
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
     ports:
       - "8080:8080"
     depends_on:

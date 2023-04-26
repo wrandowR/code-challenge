@@ -2,38 +2,23 @@ package main
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/wrandowR/code-challenge/domain/model"
+	"github.com/ansel1/merry"
+	"github.com/wrandowR/code-challenge/config"
+	"github.com/wrandowR/code-challenge/usecase/interactor"
 	"github.com/wrandowR/code-challenge/usecase/service"
 )
 
 func main() {
-
+	config.ReadConfig()
 	emailSender := service.NewEmailSender()
 
-	transactionData := model.TransactionEmail{
-		TotalBalance: 100,
-		Transactions: []model.TransactionInAMounth{
-			{
-				Month: "January",
-				Total: 100,
-			},
-			{
-				Month: "February",
-				Total: 100,
-			},
-		},
-		AverageDebitAmount:  200,
-		AverageCreditAmount: -10,
+	processor := interactor.NewFileProcessor(nil, emailSender)
+
+	if err := processor.ProccesFile("transactions.csv"); err != nil {
+		log.Fatal(merry.Wrap(err))
 	}
-
-	emailSender.SendEmail("test", &transactionData)
-	/*
-		processor := interactor.NewFileProcessor(nil, emailSender)
-
-		if err := processor.ProccesFile("transactions.csv"); err != nil {
-			log.Fatal(merry.Wrap(err))
-		}*/
 
 	fmt.Println("Done")
 }
