@@ -62,7 +62,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	for i := 0; i < config.MaxGoroutines(); i++ {
 		wg.Add(1)
-		go worker(jobs, results, &wg)
+		go worker(jobs, results, &wg, s.DataStore)
 	}
 
 	// Send jobs to workers
@@ -118,7 +118,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	return nil
 }
 
-func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
+func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup, dataStore repository.Transactions) {
 	defer wg.Done()
 
 	for job := range jobs {
@@ -146,6 +146,9 @@ func isNegative(s string) bool {
 
 func average(numbers []float64) float64 {
 	var sum float64
+	if len(numbers) == 0 {
+		return sum
+	}
 	for _, num := range numbers {
 		sum += num
 	}
