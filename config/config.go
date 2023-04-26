@@ -26,6 +26,7 @@ type config struct {
 		SMTPUser string `env:"SMTP_USER"`
 		Password string `env:"SMTP_PASSWORD"`
 	}
+	Migrate bool `env:"MIGRATE,default=false"`
 }
 
 var c config
@@ -44,8 +45,6 @@ func PgConn() string {
 		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.DbName)
 }
 
-/*
-
 // PgConnMigration returns the config string for migration
 func PgConnMigration() *string {
 	if c.Migrate {
@@ -59,9 +58,7 @@ func PgConnMigration() *string {
 	}
 
 	return nil
-}*/
-
-//
+}
 
 func MaxGoroutines() int {
 	return c.MAX_GOROUTINES

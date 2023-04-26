@@ -130,6 +130,12 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 		ok := isNegative(job[2])
 
 		//guardar en base de datos
+		dataStore.SaveTransaction(&model.Transaction{
+			IsNegative: ok,
+			Amount:     cleanTransactionAmount,
+			Date:       getMonth(job[1]),
+		},
+		)
 
 		results <- model.Transaction{
 			IsNegative: ok,

@@ -22,6 +22,7 @@ services:
       SMTP_PORT: 25
       SMTP_USER: ""
       SMTP_PASSWORD: ""
+      MIGRATE: "true"
     ports:
       - "8080:8080"
     depends_on:
