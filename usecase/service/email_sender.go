@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/ansel1/merry"
 	"github.com/wrandowR/code-challenge/config"
@@ -31,7 +34,7 @@ func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) erro
 	m.SetHeader("To", "huffyh00@hotmail.com")
 	m.SetHeader("Subject", "Summary of Transactions")
 
-	parseTemplate, err := s.parseTemplate(s.TransactionEmailTemplate, data)
+	parseTemplate, err := s.parseTemplate(data)
 	if err != nil {
 		return merry.Wrap(err)
 	}
@@ -49,8 +52,16 @@ func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) erro
 	return nil
 }
 
-func (s *emailSender) parseTemplate(templateName string, data *model.TransactionEmail) (string, error) {
-	t, err := template.ParseFiles("templates/" + s.TransactionEmailTemplate)
+func (s *emailSender) parseTemplate(data *model.TransactionEmail) (string, error) {
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", merry.Wrap(err)
+	}
+	dir = formatDir(dir)
+	sourcedir := path.Join(dir, "/templates/"+s.TransactionEmailTemplate)
+
+	t, err := template.ParseFiles(sourcedir)
 	if err != nil {
 		return "", merry.Wrap(err)
 	}
@@ -60,4 +71,9 @@ func (s *emailSender) parseTemplate(templateName string, data *model.Transaction
 	}
 
 	return buf.String(), nil
+}
+
+func formatDir(dir string) string {
+	basedir := strings.Split(dir, "/code-challenge")[0]
+	return basedir + "/code-challenge"
 }
