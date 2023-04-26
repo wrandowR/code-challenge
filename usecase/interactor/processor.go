@@ -2,7 +2,6 @@ package interactor
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/ansel1/merry/v2"
+	"github.com/sirupsen/logrus"
 	"github.com/wrandowR/code-challenge/config"
 	"github.com/wrandowR/code-challenge/domain/model"
 	repository "github.com/wrandowR/code-challenge/usecase/repository"
@@ -93,15 +93,24 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	wg.Wait()
 
-	//enviar correo aca con resultados
+	TransactionInAMounth := []model.TransactionInAMounth{}
+	for key, value := range monthMap {
+		transactions := model.TransactionInAMounth{
+			Month: key,
+			Total: float64(value),
+		}
+		TransactionInAMounth = append(TransactionInAMounth, transactions)
+	}
 
-	//s.EmailSender.
-	fmt.Println("total Balance", totalBalance)
-	fmt.Println("total Debit Transactions", totalDebitTransactions)
-	fmt.Println("total Credit Transactions", totalCreditTransactions)
-	fmt.Println("Average Debit Amount Data", average(AverageDebitAmountData))
-	fmt.Println("Average Credit Amount Data", average(AverageCreditAmountData))
-	fmt.Println("Number of transactions month", monthMap)
+	transactionEmailData := model.TransactionEmail{
+		TotalBalance:        totalBalance,
+		Transactions:        TransactionInAMounth,
+		AverageDebitAmount:  average(AverageDebitAmountData),
+		AverageCreditAmount: average(AverageCreditAmountData),
+	}
+
+	s.EmailSender.SendEmail("test", &transactionEmailData)
+	logrus.Info("Email sent")
 	return nil
 }
 
