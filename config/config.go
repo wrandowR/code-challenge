@@ -10,7 +10,8 @@ import (
 type config struct {
 	MAX_GOROUTINES int `env:"MAX_GOROUTINES,default=10"`
 
-	Database struct {
+	FromEmail string `env:"FROM_EMAIL,required"`
+	Database  struct {
 		Host     string `env:"DATABASE_HOST,required"`
 		Port     int    `env:"DATABASE_PORT,default=5432"`
 		User     string `env:"DATABASE_USER,required"`
@@ -56,6 +57,10 @@ func PgConnMigration() *string {
 
 func MaxGoroutines() int {
 	return c.MAX_GOROUTINES
+}
+
+func FromEmail() string {
+	return c.FromEmail
 }
 
 /*
