@@ -1,66 +1,41 @@
 package config
 
 import (
+	"context"
 	"fmt"
-	"log"
-	"os"
-	"path"
-	"runtime"
 
-	"path/filepath"
-
-	"github.com/spf13/viper"
+	"github.com/sethvargo/go-envconfig"
 )
 
 type config struct {
 	MAX_GOROUTINES int `env:"MAX_GOROUTINES,default=10"`
 
-	/*
-		Database struct {
-			Host     string `env:"DATABASE_HOST,required"`
-			Port     int    `env:"DATABASE_PORT,default=5432"`
-			User     string `env:"DATABASE_USER,required"`
-			Password string `env:"DATABASE_PASSWORD,required"`
-			DbName   string `env:"DATABASE_DB_NAME,required"`
-		}*/
+	Database struct {
+		Host     string `env:"DATABASE_HOST,required"`
+		Port     int    `env:"DATABASE_PORT,default=5432"`
+		User     string `env:"DATABASE_USER,required"`
+		Password string `env:"DATABASE_PASSWORD,required"`
+		DbName   string `env:"DATABASE_DB_NAME,required"`
+	}
 }
 
-var C config
+var c config
 
 // ReadConfig read config
 func ReadConfig() error {
-	Config := &C
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("yml")
-	viper.AddConfigPath(filepath.Join(rootDir(), "config"))
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		log.Fatalln(err)
-	}
-
-	if err := viper.Unmarshal(&Config); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return
+	ctx := context.Background()
+	err := envconfig.Process(ctx, &c)
+	return err
 }
 
-func rootDir() string {
-	_, b, _, _ := runtime.Caller(0)
-	d := path.Join(path.Dir(b))
-	return filepath.Dir(d)
-}
-
-/*
 // PgConn the connection string to the pg database
 func PgConn() string {
 	return fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.DbName)
 }
+
+/*
 
 // PgConnMigration returns the config string for migration
 func PgConnMigration() *string {

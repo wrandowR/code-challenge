@@ -9,21 +9,23 @@ import (
 	"strings"
 	"sync"
 
-	"code-challenge/config"
-	"code-challenge/domain/model"
-
 	"github.com/ansel1/merry/v2"
+	"github.com/wrandowR/code-challenge/config"
+	"github.com/wrandowR/code-challenge/internal/domain/model"
+	repository "github.com/wrandowR/code-challenge/internal/interface"
 )
 
 // FileProcessorService is a service that process a csv file
 type fileProcessorService struct {
-	//por mejorar :3
-	DataStore   string
-	EmailSender string
+	DataStore   repository.DataStorage
+	EmailSender repository.EmailSender
 }
 
-func NewFileProcessorService() *fileProcessorService {
-	return &fileProcessorService{}
+func NewFileProcessorService(dataStorage repository.DataStorage, emailSender repository.EmailSender) *fileProcessorService {
+	return &fileProcessorService{
+		DataStore:   dataStorage,
+		EmailSender: emailSender,
+	}
 }
 
 func (s *fileProcessorService) ProccesFile(r io.Reader) error {
@@ -91,7 +93,7 @@ func (s *fileProcessorService) ProccesFile(r io.Reader) error {
 	fmt.Println("Average Debit Amount Data", average(AverageDebitAmountData))
 	fmt.Println("Average Credit Amount Data", average(AverageCreditAmountData))
 	fmt.Println("Number of transactions month", monthMap)
-
+	return nil
 }
 
 func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
