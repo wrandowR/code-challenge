@@ -1,15 +1,54 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 
+<head>
+    <meta charset="UTF-8">
+    <title>Plantilla de correo electrónico</title>
+    <style>
+        /* Estilos para el encabezado */
+        .header {
+            background-color: #f7f7f7;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Estilos para el logo */
+        .logo {
+            max-width: 100px;
+        }
+
+        /* Estilos para el cuerpo del mensaje */
+        .body {
+            padding: 20px;
+        }
+
+        /* Estilos para el pie de página */
+        .footer {
+            background-color: #f7f7f7;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
-<p>
-    Hello {{.Name}}
-    <a href="{{.URL}}">Confirm email address</a>
-</p>
-    
+    <!-- Encabezado -->
+    <div class="header">
+        <img src="https://www.storicard.com/_next/static/media/icon-pay-services.089b3e6d.svg" alt="Logo de tu empresa"
+            class="logo">
+        <h1>Título del correo electrónico</h1>
+    </div>
+
+    <!-- Cuerpo del mensaje -->
+    <div class="body">
+        <p>Contenido del correo electrónico</p>
+        <p>...</p>
+    </div>
+
+    <!-- Pie de página -->
+    <div class="footer">
+        <p>Este es el pie de página del correo electrónico.</p>
+    </div>
 </body>
 
 </html>

@@ -17,13 +17,65 @@ func NewEmailSender() EmailSender {
 
 func (s *emailSender) SendEmail(email string, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "alex@example.com")
-	m.SetHeader("To", "bob@example.com", "cora@example.com")
+	m.SetHeader("From", "test@hotmail.com")
+	m.SetHeader("To", "huffyh00@hotmail.com")
 	m.SetAddressHeader("Cc", "dan@example.com", "Dan")
-	m.SetHeader("Subject", "Hello!")
-	m.SetBody("text/html", "Hello <b>Bob</b> and <i>Cora</i>!")
+	m.SetHeader("Subject", "Hello que mas!")
+	m.SetBody("text/html", `
+	
+	<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Plantilla de correo electrónico</title>
+	<style>
+		/* Estilos para el encabezado */
+		.header {
+			background-color: #f7f7f7;
+			padding: 20px;
+			text-align: center;
+		}
+		
+		/* Estilos para el logo */
+		.logo {
+			max-width: 100px;
+		}
+		
+		/* Estilos para el cuerpo del mensaje */
+		.body {
+			padding: 20px;
+		}
+		
+		/* Estilos para el pie de página */
+		.footer {
+			background-color: #f7f7f7;
+			padding: 20px;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<!-- Encabezado -->
+	<div class="header">
+		<img src="https://www.storicard.com/_next/static/media/icon-pay-services.089b3e6d.svg" alt="Logo de tu empresa" class="logo">
+		<h1>Título del correo electrónico</h1>
+	</div>
+	
+	<!-- Cuerpo del mensaje -->
+	<div class="body">
+		<p>Contenido del correo electrónico</p>
+		<p>...</p>
+	</div>
+	
+	<!-- Pie de página -->
+	<div class="footer">
+		<p>Este es el pie de página del correo electrónico.</p>
+	</div>
+</body>
+</html>
+	`)
 
-	d := gomail.NewDialer("smtp.example.com", 587, "user", "123456")
+	d := gomail.NewDialer("smtp.freesmtpservers.com", 25, "", "")
 
 	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
