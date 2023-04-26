@@ -21,59 +21,76 @@ func (s *emailSender) SendEmail(email string, body string) error {
 	m.SetHeader("To", "huffyh00@hotmail.com")
 	m.SetAddressHeader("Cc", "dan@example.com", "Dan")
 	m.SetHeader("Subject", "Hello que mas!")
-	m.SetBody("text/html", `
+	m.SetBody("text/html", `<!DOCTYPE html>
+	<html>
 	
-	<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>Plantilla de correo electrónico</title>
-	<style>
-		/* Estilos para el encabezado */
-		.header {
-			background-color: #f7f7f7;
-			padding: 20px;
-			text-align: center;
-		}
-		
-		/* Estilos para el logo */
-		.logo {
-			max-width: 100px;
-		}
-		
-		/* Estilos para el cuerpo del mensaje */
-		.body {
-			padding: 20px;
-		}
-		
-		/* Estilos para el pie de página */
-		.footer {
-			background-color: #f7f7f7;
-			padding: 20px;
-			text-align: center;
-		}
-	</style>
-</head>
-<body>
-	<!-- Encabezado -->
-	<div class="header">
-		<img src="https://www.storicard.com/_next/static/media/icon-pay-services.089b3e6d.svg" alt="Logo de tu empresa" class="logo">
-		<h1>Título del correo electrónico</h1>
-	</div>
+	<head>
+		<title>Resumen de Transacciones</title>
+		<style type="text/css">
+			table {
+				border-collapse: collapse;
+				width: 100%;
+			}
 	
-	<!-- Cuerpo del mensaje -->
-	<div class="body">
-		<p>Contenido del correo electrónico</p>
-		<p>...</p>
-	</div>
+			th,
+			td {
+				padding: 8px;
+				text-align: left;
+				border-bottom: 1px solid #ddd;
+			}
 	
-	<!-- Pie de página -->
-	<div class="footer">
-		<p>Este es el pie de página del correo electrónico.</p>
-	</div>
-</body>
-</html>
-	`)
+			th {
+				background-color: #4CAF50;
+				color: white;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<!-- Encabezado -->
+		<div class="header">
+			<img src="https://www.storicard.com/_next/static/media/icon-pay-services.089b3e6d.svg" alt="Logo de tu empresa"
+				class="logo">
+			<h1>Resumen de Transacciones</h1>
+		</div>
+	
+		<!-- Cuerpo del mensaje -->
+		<div class="body">
+			<table>
+				<tr>
+					<th>Mes</th>
+					<th>Número de transacciones</th>
+				</tr>
+				<tr>
+					<td>Julio</td>
+					<td>2</td>
+				</tr>
+				<tr>
+					<td>Agosto</td>
+					<td>2</td>
+				</tr>
+			</table>
+			<table>
+				<tr>
+					<th>Total balance is</th>
+					<th>Average debit amount</th>
+					<th>Average credit amount</th>
+				</tr>
+				<tr>
+					<td>39.74</td>
+					<td>-15.38</td>
+					<td>35.25</td>
+				</tr>
+			</table>
+		</div>
+	
+		<!-- Pie de página -->
+		<div class="footer">
+			<p>Gracias por su atención.</p>
+		</div>
+	</body>
+	
+	</html>`)
 
 	d := gomail.NewDialer("smtp.freesmtpservers.com", 25, "", "")
 
