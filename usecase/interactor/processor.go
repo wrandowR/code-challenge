@@ -2,7 +2,6 @@ package interactor
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"math"
 	"os"
@@ -75,7 +74,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	monthMap := make(map[string]int)
 
 	// Collect results from workers
-	fmt.Println(records)
+
 	for i := 0; i < len(records); i++ {
 		result := <-results
 
