@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ansel1/merry/v2"
 	"github.com/sirupsen/logrus"
@@ -63,7 +64,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	for i := 0; i < config.MaxGoroutines(); i++ {
 		wg.Add(1)
-		go worker(jobs, results, &wg, s.DataStore)
+		go worker(jobs, results, &wg)
 	}
 
 	// Send jobs to workers
@@ -76,10 +77,29 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	// Collect results from workers
 
+	values := make([]*model.Transaction, 0)
+
+	fmt.Println("started", time.Now())
+	start := time.Now()
+
 	for i := 0; i < len(records); i++ {
 		result := <-results
 
-		getTransactionsPerMonth(monthMap, result.Date)
+		values = append(values, &model.Transaction{
+			Amount: result.Amount,
+			Date:   result.Date,
+		})
+		if len(values) == 1000 {
+			//guardar en base de datos aca deberia estar guardando los datos asosiado a un id de usuario o cuenta, pero como no tengo datos,
+			//prefiero dejarlo abierto , solo se muentras el ejemplo de un guardado en base de datos
+			err := s.DataStore.SaveTransactions(values)
+			if err != nil {
+				logrus.WithError(err)
+			}
+			values = values[:0]
+		}
+
+		getTransactionsPerMonth(monthMap, getMonth(result.Date))
 
 		if result.Amount < 0 {
 			totalBalance -= result.Amount
@@ -93,6 +113,17 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 		AverageCreditAmountData = append(AverageCreditAmountData, result.Amount)
 
 	}
+
+	if len(values) > 0 {
+		err := s.DataStore.SaveTransactions(values)
+		if err != nil {
+			logrus.WithError(err)
+		}
+
+	}
+
+	elapsed := time.Since(start)
+	fmt.Printf("Se procesaron %d registros en %v segundos\n", len(records), elapsed.Seconds())
 
 	wg.Wait()
 
@@ -119,7 +150,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	return nil
 }
 
-func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup, dataStore repository.Transactions) {
+func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for job := range jobs {
@@ -135,20 +166,9 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 			cleantAmount = cleanTransactionAmount * -1
 		}
 
-		fmt.Println(cleantAmount, "CLEAN AMOUNT", cleanTransactionAmount)
-		//guardar en base de datos aca deberia estar guardando los datos asosiado a un id de usuario o cuenta, pero como no tengo datos,
-		//prefiero dejarlo abierto , solo se muentras el ejemplo de un guardado en base de datos
-		_, err = dataStore.SaveTransaction(&model.Transaction{
-			Amount: cleantAmount,
-			Date:   job[1],
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		results <- model.Transaction{
 			Amount: cleantAmount,
-			Date:   getMonth(job[1]),
+			Date:   job[1],
 		}
 	}
 }

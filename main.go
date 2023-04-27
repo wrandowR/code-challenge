@@ -24,6 +24,7 @@ func main() {
 	}
 
 	if config.EnableMigrations() {
+		datastore.ResetDatabase()
 		datastore.DoMigration()
 	}
 

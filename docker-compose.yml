@@ -15,7 +15,7 @@ services:
     build:
       context: ./
     environment:
-      MAX_GOROUTINES: 10
+      MAX_GOROUTINES: 100
       DATABASE_HOST: db
       DATABASE_USER: postgres
       DATABASE_PASSWORD: mypassword

@@ -3,6 +3,9 @@ package repository
 //implementacion
 
 import (
+	"context"
+	"time"
+
 	"github.com/ansel1/merry"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -23,23 +26,48 @@ var TransactionRepository repository.Transactions = &transactionRepository{
 	transactionsTable: transactionsTable,
 }
 
-func (t *transactionRepository) Transactions(clientID string) ([]*model.Transaction, error) {
+func (t *transactionRepository) GetTransactions(clientID string) ([]*model.Transaction, error) {
 
 	return nil, merry.New("not implemented")
 }
 
-func (t *transactionRepository) SaveTransaction(transaction *model.Transaction) (*model.Transaction, error) {
-	_, err := t.db.Insert(t.transactionsTable).Cols(
+func (t *transactionRepository) SaveTransactions(transactions []*model.Transaction) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	tx, err := t.db.BeginTx(ctx, nil)
+	if err != nil {
+		return merry.Wrap(err)
+	}
+
+	query := goqu.Insert(t.transactionsTable).Rows(transactions)
+	sql, args, err := query.ToSQL()
+	if err != nil {
+		return merry.Wrap(err)
+	}
+
+	_, err = tx.ExecContext(ctx, sql, args...)
+	if err != nil {
+		tx.Rollback()
+		return merry.Wrap(err)
+
+	}
+
+	//comit tx with rollback
+	if err = tx.Commit(); err != nil {
+		return merry.Wrap(err)
+	}
+
+	return nil
+}
+
+/*
+	insert, err := t.db.Insert(t.transactionsTable).Cols(
 		"amount",
 		"date",
 	).Vals(goqu.Vals{
-		transaction.Amount,
+		transaction.Amount...,
 		transaction.Date,
 	}).Executor().Exec()
 
-	if err != nil {
-		return nil, merry.Wrap(err)
-	}
-
-	return &model.Transaction{}, nil
-}
+*/
