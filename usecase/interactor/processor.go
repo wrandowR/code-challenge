@@ -2,6 +2,7 @@ package interactor
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -62,7 +63,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	for i := 0; i < config.MaxGoroutines(); i++ {
 		wg.Add(1)
-		go worker(jobs, results, &wg)
+		go worker(jobs, results, &wg, s.DataStore)
 	}
 
 	// Send jobs to workers
@@ -80,7 +81,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 		getTransactionsPerMonth(monthMap, result.Date)
 
-		if result.IsNegative {
+		if result.Amount < 0 {
 			totalBalance -= result.Amount
 			totalDebitTransactions += result.Amount
 			AverageDebitAmountData = append(AverageDebitAmountData, result.Amount)
@@ -118,7 +119,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	return nil
 }
 
-func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
+func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup, dataStore repository.Transactions) {
 	defer wg.Done()
 
 	for job := range jobs {
@@ -129,19 +130,19 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 		}
 		ok := isNegative(job[2])
 
-		/*	var cleantAmount float64 = cleanTransactionAmount
-			if ok {
-				cleantAmount = cleanTransactionAmount * -1
-			}
-		*/
-		/*
-			//guardar en base de datos
-			transactionResult, err := dataStore.SaveTransaction(&model.Transaction{
-				IsNegative: ok,
-				Amount:     cleantAmount,
-				Date:       job[1],
-			})
-		*/
+		var cleantAmount float64 = cleanTransactionAmount
+		if ok {
+			cleantAmount = cleanTransactionAmount * -1
+		}
+
+		fmt.Println(cleantAmount, "CLEAN AMOUNT", cleanTransactionAmount)
+		//guardar en base de datos
+		transactionResult, err := dataStore.SaveTransaction(&model.Transaction{
+			Amount: cleantAmount,
+			Date:   job[1],
+		})
+
+		fmt.Println(transactionResult, "RESULTADO TRANSACCION")
 		//validar esto aca no estoy seguro
 		if err != nil {
 			log.Fatal(err)
@@ -150,9 +151,8 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 		//fmt.Println(transactionResult, "RESULTADO TRANSACCION")
 
 		results <- model.Transaction{
-			IsNegative: ok,
-			Amount:     cleanTransactionAmount,
-			Date:       getMonth(job[1]),
+			Amount: cleantAmount,
+			Date:   getMonth(job[1]),
 		}
 	}
 }

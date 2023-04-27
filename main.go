@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/wrandowR/code-challenge/config"
 	"github.com/wrandowR/code-challenge/infrastructure/datastore"
+	repo "github.com/wrandowR/code-challenge/interface/repository"
 	"github.com/wrandowR/code-challenge/usecase/interactor"
 	"github.com/wrandowR/code-challenge/usecase/service"
 )
@@ -28,7 +29,7 @@ func main() {
 
 	emailSender := service.NewEmailSender()
 
-	processor := interactor.NewFileProcessor(nil, emailSender)
+	processor := interactor.NewFileProcessor(repo.TransactionRepository, emailSender)
 
 	if err := processor.ProccesFile("transactions.csv"); err != nil {
 		logrus.Fatal(merry.Wrap(err))

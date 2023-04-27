@@ -1,9 +1,8 @@
 package model
 
 type Transaction struct {
-	IsNegative bool
-	Amount     float64
-	Date       string
+	Amount float64
+	Date   string
 }
 
 // structura para los datos de las transacciones que se enviaran por email

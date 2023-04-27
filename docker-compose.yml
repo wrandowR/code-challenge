@@ -18,7 +18,7 @@ services:
       MAX_GOROUTINES: 10
       DATABASE_HOST: db
       DATABASE_USER: postgres
-      DATABASE_PASSWORD: "mypassword"
+      DATABASE_PASSWORD: mypassword
       DATABASE_DB_NAME: testingdb
       SMTP_HOST: smtp.freesmtpservers.com
       SMTP_PORT: 25
@@ -32,4 +32,5 @@ services:
       - db
     links:
       - db  
-  
+    volumes:
+    - ./transactions.csv:/app/transactions.csv
