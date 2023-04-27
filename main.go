@@ -28,7 +28,7 @@ func main() {
 		datastore.DoMigration()
 	}
 
-	emailSender := service.NewEmailSender()
+	emailSender := service.NewEmailSender("testemailchallenge@hotmail.com")
 
 	processor := interactor.NewFileProcessor(repo.TransactionRepository, emailSender)
 

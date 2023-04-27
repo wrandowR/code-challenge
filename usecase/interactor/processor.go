@@ -114,7 +114,8 @@ func (s *fileProcessor) ProccesFile(filename string) error {
 		}
 	}
 
-	totalBalance := totalCreditTransactionsAmount - totalDebitTransactionsAmount
+	totalBalance := totalCreditTransactionsAmount + totalDebitTransactionsAmount
+	fmt.Println("totalBalance", totalBalance, totalCreditTransactionsAmount, totalDebitTransactionsAmount)
 	avergeCreditAmount := totalCreditTransactionsAmount / totalCreditTransactions
 	avergeDebitAmount := totalDebitTransactionsAmount / totalDebitTransactions
 
@@ -134,14 +135,13 @@ func (s *fileProcessor) ProccesFile(filename string) error {
 		AverageCreditAmount: math.Round(avergeCreditAmount*100) / 100,
 	}
 
-	if err := s.EmailSender.SendEmail("huffyh00@hotmail.com", &transactionEmailData); err != nil {
+	if err := s.EmailSender.SendEmail(&transactionEmailData); err != nil {
 		return merry.Wrap(err)
 	}
-	logrus.Info("Email sent")
 
 	elapsed := time.Since(start)
 	fmt.Printf("Se procesaron %d registros en %v segundos\n", totalRecords, elapsed.Seconds())
-
+	logrus.Info("Email sent")
 	return nil
 }
 

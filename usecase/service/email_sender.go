@@ -14,23 +14,25 @@ import (
 )
 
 type EmailSender interface {
-	SendEmail(email string, data *model.TransactionEmail) error
+	SendEmail(data *model.TransactionEmail) error
 }
 
 type emailSender struct {
 	TransactionEmailTemplate string
+	Email                    string
 }
 
-func NewEmailSender() EmailSender {
+func NewEmailSender(email string) EmailSender {
 	return &emailSender{
 		TransactionEmailTemplate: "email.html",
+		Email:                    email,
 	}
 }
 
-func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) error {
+func (s *emailSender) SendEmail(data *model.TransactionEmail) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", config.FromEmail())
-	m.SetHeader("To", email)
+	m.SetAddressHeader("From", config.FromEmail(), "Code Challenge")
+	m.SetHeader("To", s.Email)
 	m.SetHeader("Subject", "Summary of Transactions")
 
 	parseTemplate, err := s.parseTemplate(data)
