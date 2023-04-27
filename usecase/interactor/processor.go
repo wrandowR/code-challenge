@@ -37,7 +37,7 @@ func (s *fileProcessor) ProccesFile(filename string) error {
 	if err != nil {
 		return merry.Wrap(err)
 	}
-	//defer file.Close()
+	defer file.Close()
 
 	csvReader := csv.NewReader(file)
 	monthMap := make(map[string]int)
