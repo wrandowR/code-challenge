@@ -136,19 +136,15 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 		}
 
 		fmt.Println(cleantAmount, "CLEAN AMOUNT", cleanTransactionAmount)
-		//guardar en base de datos
-		transactionResult, err := dataStore.SaveTransaction(&model.Transaction{
+		//guardar en base de datos aca deberia estar guardando los datos asosiado a un id de usuario o cuenta, pero como no tengo datos,
+		//prefiero dejarlo abierto , solo se muentras el ejemplo de un guardado en base de datos
+		_, err = dataStore.SaveTransaction(&model.Transaction{
 			Amount: cleantAmount,
 			Date:   job[1],
 		})
-
-		fmt.Println(transactionResult, "RESULTADO TRANSACCION")
-		//validar esto aca no estoy seguro
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		//fmt.Println(transactionResult, "RESULTADO TRANSACCION")
 
 		results <- model.Transaction{
 			Amount: cleantAmount,
