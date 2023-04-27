@@ -115,7 +115,6 @@ func (s *fileProcessor) ProccesFile(filename string) error {
 	}
 
 	totalBalance := totalCreditTransactionsAmount + totalDebitTransactionsAmount
-	fmt.Println("totalBalance", totalBalance, totalCreditTransactionsAmount, totalDebitTransactionsAmount)
 	avergeCreditAmount := totalCreditTransactionsAmount / totalCreditTransactions
 	avergeDebitAmount := totalDebitTransactionsAmount / totalDebitTransactions
 

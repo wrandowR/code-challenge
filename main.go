@@ -12,6 +12,9 @@ import (
 	"github.com/wrandowR/code-challenge/usecase/service"
 )
 
+var destinationEmail = "testemailchallenge@hotmail.com"
+var fileName = "transactions.csv"
+
 func main() {
 	if err := config.ReadConfig(); err != nil {
 		fmt.Println("Error reading config", err)
@@ -28,11 +31,11 @@ func main() {
 		datastore.DoMigration()
 	}
 
-	emailSender := service.NewEmailSender("testemailchallenge@hotmail.com")
+	emailSender := service.NewEmailSender(destinationEmail)
 
 	processor := interactor.NewFileProcessor(repo.TransactionRepository, emailSender)
 
-	if err := processor.ProccesFile("transactions.csv"); err != nil {
+	if err := processor.ProccesFile(fileName); err != nil {
 		logrus.Fatal(merry.Wrap(err))
 	}
 

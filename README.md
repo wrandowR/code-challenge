@@ -1,7 +1,6 @@
 # Go Transaction Processing Program
 
-This is a Go transaction processing program that uses scalable goroutines to process large volumes of transaction data. The program opens a CSV file, processes the transaction data, calculates the credit total and average, saves the information to a PostgreSQL database, and sends an email with the results.
-
+This Golang program reads a CSV file, processes the data, saves it to a PostgreSQL database, and sends an email with a summary of the file's transactions.
 Requirements
 
 * golang
@@ -14,6 +13,14 @@ To make it easier to set these environment variables, it is recommended that you
 
 ``` sh 
 docker-compose up -d 
+```
+
+The destination email and the file name can be modified in the main file
+
+``` go
+var destinationEmail = "testemailchallenge@hotmail.com"
+var fileName = "transactions.csv"
+
 ```
 
 
