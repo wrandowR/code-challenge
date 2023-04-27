@@ -31,7 +31,10 @@ func main() {
 		datastore.DoMigration()
 	}
 
-	emailSender := service.NewEmailSender(destinationEmail)
+	emailSender, err := service.NewEmailSender(destinationEmail)
+	if err != nil {
+		logrus.Fatal(merry.Wrap(err))
+	}
 
 	processor := interactor.NewFileProcessor(repo.TransactionRepository, emailSender)
 

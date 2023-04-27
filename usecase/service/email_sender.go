@@ -2,10 +2,10 @@ package service
 
 import (
 	"bytes"
-	"html/template"
 	"os"
 	"path"
 	"strings"
+	"text/template"
 
 	"github.com/ansel1/merry"
 	"github.com/wrandowR/code-challenge/config"
@@ -17,16 +17,30 @@ type EmailSender interface {
 	SendEmail(data *model.TransactionEmail) error
 }
 
+var templateName = "email.html"
+
 type emailSender struct {
-	TransactionEmailTemplate string
-	Email                    string
+	Template *template.Template
+	Email    string
 }
 
-func NewEmailSender(email string) EmailSender {
-	return &emailSender{
-		TransactionEmailTemplate: "email.html",
-		Email:                    email,
+func NewEmailSender(email string) (EmailSender, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, merry.Wrap(err)
 	}
+	dir = formatDir(dir)
+	sourcedir := path.Join(dir, "/templates/"+templateName)
+
+	t, err := template.ParseFiles(sourcedir)
+	if err != nil {
+		return nil, merry.Wrap(err)
+	}
+
+	return &emailSender{
+		Template: t,
+		Email:    email,
+	}, nil
 }
 
 func (s *emailSender) SendEmail(data *model.TransactionEmail) error {
@@ -53,19 +67,8 @@ func (s *emailSender) SendEmail(data *model.TransactionEmail) error {
 
 func (s *emailSender) parseTemplate(data *model.TransactionEmail) (string, error) {
 
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", merry.Wrap(err)
-	}
-	dir = formatDir(dir)
-	sourcedir := path.Join(dir, "/templates/"+s.TransactionEmailTemplate)
-
-	t, err := template.ParseFiles(sourcedir)
-	if err != nil {
-		return "", merry.Wrap(err)
-	}
 	buf := new(bytes.Buffer)
-	if err = t.Execute(buf, data); err != nil {
+	if err := s.Template.Execute(buf, data); err != nil {
 		return "", merry.Wrap(err)
 	}
 
