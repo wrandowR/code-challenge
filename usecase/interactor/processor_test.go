@@ -1,7 +1,11 @@
 package interactor
 
 import (
+	"fmt"
+	"math/rand"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -92,5 +96,35 @@ func TestCleanAndParseTransaction(t *testing.T) {
 				t.Errorf("Unexpected result. input=%v, expected=%v, actual=%v", tt.input, tt.expected, actual)
 			}
 		})
+	}
+}
+
+func TestRamdonDataTest(t *testing.T) {
+	rand.Seed(time.Now().UnixNano()) // Semilla aleatoria para generar valores aleatorios
+
+	// Bucle para generar 4 filas de datos de prueba
+	for i := 0; i < 10000; i++ {
+		// Generar un ID de transacción aleatorio entre 0 y 99
+		transactionID := i
+
+		// Generar una fecha aleatoria entre el 1 de julio y el 31 de agosto
+		startDate := time.Date(2022, time.July, 1, 0, 0, 0, 0, time.UTC).Unix()
+		endDate := time.Date(2022, time.August, 31, 23, 59, 59, 0, time.UTC).Unix()
+		seconds := rand.Int63n(endDate-startDate) + startDate
+		date := time.Unix(seconds, 0).Format("1/2")
+
+		// Generar un valor aleatorio entre -100 y 100 con una precisión de dos decimales
+		amount := rand.Float64()*200 - 100
+		amountStr := strconv.FormatFloat(amount, 'f', 2, 64)
+
+		// Generar una cadena que indique si el valor es positivo o negativo
+		var sign string
+		if amount >= 0 {
+			sign = "+"
+		}
+
+		// Imprimir los datos de prueba generados
+		fmt.Printf("%v,%v,%v%v\n", transactionID, date, sign, amountStr)
+		t.Fail()
 	}
 }
