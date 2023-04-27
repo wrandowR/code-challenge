@@ -1,6 +1,7 @@
 package model
 
 type Transaction struct {
+	ID     string
 	Amount float64
 	Date   string
 }

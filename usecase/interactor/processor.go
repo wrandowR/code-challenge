@@ -3,17 +3,15 @@ package interactor
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
+	"io"
 	"math"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ansel1/merry/v2"
 	"github.com/sirupsen/logrus"
-	"github.com/wrandowR/code-challenge/config"
 	"github.com/wrandowR/code-challenge/domain/model"
 	repository "github.com/wrandowR/code-challenge/usecase/repository"
 	"github.com/wrandowR/code-challenge/usecase/service"
@@ -32,63 +30,71 @@ func NewFileProcessor(dataStorage repository.Transactions, emailSender service.E
 	}
 }
 
-func (s *fileProcessor) ProccesFile(dir string) error {
+func (s *fileProcessor) ProccesFile(filename string) error {
 
 	// Open the file
-	file, err := os.Open(dir)
+	file, err := os.Open(filename)
 	if err != nil {
 		return merry.Wrap(err)
 	}
 	//defer file.Close()
 
 	csvReader := csv.NewReader(file)
-
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		return merry.Wrap(err)
-	}
-
-	//delete header
-	records = records[1:]
-
-	var totalBalance float64
-	var totalCreditTransactions float64
-	var totalDebitTransactions float64
-	var AverageCreditAmountData []float64
-	var AverageDebitAmountData []float64
-
-	// Create worker pool
-	var wg sync.WaitGroup
-	jobs := make(chan []string, len(records))
-	results := make(chan model.Transaction, len(records))
-
-	for i := 0; i < config.MaxGoroutines(); i++ {
-		wg.Add(1)
-		go worker(jobs, results, &wg)
-	}
-
-	// Send jobs to workers
-	for _, record := range records {
-		jobs <- record
-	}
-	close(jobs)
-
 	monthMap := make(map[string]int)
 
-	// Collect results from workers
+	var totalCreditTransactionsAmount float64
+	var totalDebitTransactionsAmount float64
+	var totalCreditTransactions float64
+	var totalDebitTransactions float64
 
+	var totalRecords int
+	header := true
 	values := make([]*model.Transaction, 0)
 
 	fmt.Println("started", time.Now())
 	start := time.Now()
+	for {
+		record, err := csvReader.Read()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			panic(err)
+		}
+		if len(record) == 0 {
+			break
+		}
+		if header {
+			header = false
+			continue
+		}
 
-	for i := 0; i < len(records); i++ {
-		result := <-results
+		totalRecords++
+
+		getTransactionsPerMonth(monthMap, getMonth(record[1]))
+
+		cleanTransactionAmount, err := cleanAndParseTransaction(record[2])
+		if err != nil {
+			logrus.WithError(err).Error("error parsing transaction amount", record[2])
+			continue
+		}
+		ok := isNegative(record[2])
+		if ok {
+			cleanTransactionAmount = cleanTransactionAmount * -1
+			totalDebitTransactionsAmount += cleanTransactionAmount
+			totalDebitTransactions++
+
+		} else {
+			totalCreditTransactionsAmount += cleanTransactionAmount
+			totalCreditTransactions++
+		}
 
 		values = append(values, &model.Transaction{
-			Amount: result.Amount,
-			Date:   result.Date,
+			ID:     record[0],
+			Amount: cleanTransactionAmount,
+			Date:   record[1],
 		})
+
 		if len(values) == 1000 {
 			//guardar en base de datos aca deberia estar guardando los datos asosiado a un id de usuario o cuenta, pero como no tengo datos,
 			//prefiero dejarlo abierto , solo se muentras el ejemplo de un guardado en base de datos
@@ -99,19 +105,6 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 			values = values[:0]
 		}
 
-		getTransactionsPerMonth(monthMap, getMonth(result.Date))
-
-		if result.Amount < 0 {
-			totalBalance -= result.Amount
-			totalDebitTransactions += result.Amount
-			AverageDebitAmountData = append(AverageDebitAmountData, result.Amount)
-			continue
-		}
-
-		totalBalance += result.Amount
-		totalCreditTransactions += result.Amount
-		AverageCreditAmountData = append(AverageCreditAmountData, result.Amount)
-
 	}
 
 	if len(values) > 0 {
@@ -119,13 +112,11 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 		if err != nil {
 			logrus.WithError(err)
 		}
-
 	}
 
-	elapsed := time.Since(start)
-	fmt.Printf("Se procesaron %d registros en %v segundos\n", len(records), elapsed.Seconds())
-
-	wg.Wait()
+	totalBalance := totalCreditTransactionsAmount - totalDebitTransactionsAmount
+	avergeCreditAmount := totalCreditTransactionsAmount / totalCreditTransactions
+	avergeDebitAmount := totalDebitTransactionsAmount / totalDebitTransactions
 
 	TransactionInAMounth := []model.TransactionInAMounth{}
 	for key, value := range monthMap {
@@ -139,54 +130,24 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	transactionEmailData := model.TransactionEmail{
 		TotalBalance:        math.Round(totalBalance*100) / 100,
 		Transactions:        TransactionInAMounth,
-		AverageDebitAmount:  average(AverageDebitAmountData),
-		AverageCreditAmount: average(AverageCreditAmountData),
+		AverageDebitAmount:  math.Round(avergeDebitAmount*100) / 100,
+		AverageCreditAmount: math.Round(avergeCreditAmount*100) / 100,
 	}
 
-	if err := s.EmailSender.SendEmail("test", &transactionEmailData); err != nil {
+	if err := s.EmailSender.SendEmail("huffyh00@hotmail.com", &transactionEmailData); err != nil {
 		return merry.Wrap(err)
 	}
 	logrus.Info("Email sent")
+
+	elapsed := time.Since(start)
+	fmt.Printf("Se procesaron %d registros en %v segundos\n", totalRecords, elapsed.Seconds())
+
 	return nil
 }
 
-func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	for job := range jobs {
-
-		cleanTransactionAmount, err := cleanAndParseTransaction(job[2])
-		if err != nil {
-			log.Fatal(err)
-		}
-		ok := isNegative(job[2])
-
-		var cleantAmount float64 = cleanTransactionAmount
-		if ok {
-			cleantAmount = cleanTransactionAmount * -1
-		}
-
-		results <- model.Transaction{
-			Amount: cleantAmount,
-			Date:   job[1],
-		}
-	}
-}
-
-// funcion que tetorna si un string de numer so es negativo o positivoas
+// funcion que tetorna si un string de numer so es negativo o positivos
 func isNegative(s string) bool {
 	return s[0] == '-'
-}
-
-func average(numbers []float64) float64 {
-	var sum float64
-	if len(numbers) == 0 {
-		return sum
-	}
-	for _, num := range numbers {
-		sum += num
-	}
-	return sum / float64(len(numbers))
 }
 
 func cleanAndParseTransaction(transaction string) (float64, error) {

@@ -60,14 +60,3 @@ func (t *transactionRepository) SaveTransactions(transactions []*model.Transacti
 
 	return nil
 }
-
-/*
-	insert, err := t.db.Insert(t.transactionsTable).Cols(
-		"amount",
-		"date",
-	).Vals(goqu.Vals{
-		transaction.Amount...,
-		transaction.Date,
-	}).Executor().Exec()
-
-*/

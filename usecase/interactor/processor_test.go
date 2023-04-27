@@ -55,39 +55,6 @@ func TestIsNegative(t *testing.T) {
 	}
 }
 
-func TestAverage(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    []float64
-		expected float64
-	}{
-		{
-			name:     "Multiple numbers",
-			input:    []float64{1.0, 2.0, 3.0, 4.0, 5.0},
-			expected: 3.0,
-		},
-		{
-			name:     "Single number",
-			input:    []float64{2.5},
-			expected: 2.5,
-		},
-		{
-			name:     "Empty input",
-			input:    []float64{},
-			expected: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			actual := average(tt.input)
-			if actual != tt.expected {
-				t.Errorf("Unexpected result. input=%v, expected=%v, actual=%v", tt.input, tt.expected, actual)
-			}
-		})
-	}
-}
-
 func TestCleanAndParseTransaction(t *testing.T) {
 	tests := []struct {
 		name        string
