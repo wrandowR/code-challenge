@@ -30,13 +30,11 @@ func (t *transactionRepository) Transactions(clientID string) ([]*model.Transact
 
 func (t *transactionRepository) SaveTransaction(transaction *model.Transaction) (*model.Transaction, error) {
 	_, err := t.db.Insert(t.transactionsTable).Cols(
-		"id",
-		"name",
-		"brewery",
-		"country",
-		"price",
-		"currency").Vals(goqu.Vals{
+		"amount",
+		"date",
+	).Vals(goqu.Vals{
 		transaction.Amount,
+		transaction.Date,
 	}).Executor().Exec()
 
 	if err != nil {

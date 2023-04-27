@@ -62,7 +62,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 
 	for i := 0; i < config.MaxGoroutines(); i++ {
 		wg.Add(1)
-		go worker(jobs, results, &wg, s.DataStore)
+		go worker(jobs, results, &wg)
 	}
 
 	// Send jobs to workers
@@ -118,7 +118,7 @@ func (s *fileProcessor) ProccesFile(dir string) error {
 	return nil
 }
 
-func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup, dataStore repository.Transactions) {
+func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for job := range jobs {
@@ -129,13 +129,25 @@ func worker(jobs <-chan []string, results chan<- model.Transaction, wg *sync.Wai
 		}
 		ok := isNegative(job[2])
 
-		//guardar en base de datos
-		dataStore.SaveTransaction(&model.Transaction{
-			IsNegative: ok,
-			Amount:     cleanTransactionAmount,
-			Date:       getMonth(job[1]),
-		},
-		)
+		/*	var cleantAmount float64 = cleanTransactionAmount
+			if ok {
+				cleantAmount = cleanTransactionAmount * -1
+			}
+		*/
+		/*
+			//guardar en base de datos
+			transactionResult, err := dataStore.SaveTransaction(&model.Transaction{
+				IsNegative: ok,
+				Amount:     cleantAmount,
+				Date:       job[1],
+			})
+		*/
+		//validar esto aca no estoy seguro
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//fmt.Println(transactionResult, "RESULTADO TRANSACCION")
 
 		results <- model.Transaction{
 			IsNegative: ok,

@@ -2,31 +2,34 @@ version: '3'
 services:
   db:
     image: postgres:latest
+    restart: always
     environment:
-      POSTGRES_USER: myuser
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_DB: testingdb
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ~/volumes/postgres/testing:/var/lib/postgresql/data
   app:
-    build: .
+    build:
+      context: ./
     environment:
       MAX_GOROUTINES: 10
       DATABASE_HOST: db
       DATABASE_USER: postgres
-      DATABASE_PASSWORD: "secure_pass_here"
+      DATABASE_PASSWORD: "mypassword"
       DATABASE_DB_NAME: testingdb
       SMTP_HOST: smtp.freesmtpservers.com
       SMTP_PORT: 25
       SMTP_USER: ""
       SMTP_PASSWORD: ""
       MIGRATE: "true"
+      FROM_EMAIL: "huffyh00@hotmail.com"
     ports:
       - "8080:8080"
     depends_on:
       - db
-    volumes:
-      - ./transactions.csv:/app/transactions.csv
-      - ./templates/email.html:/app/templates/email.html
+    links:
+      - db  
+  

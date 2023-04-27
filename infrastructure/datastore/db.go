@@ -29,7 +29,6 @@ func newDB(psqlInfo string) error {
 	}
 	err = SQLDB.Ping()
 	if err != nil {
-
 		return merry.Wrap(err)
 	}
 

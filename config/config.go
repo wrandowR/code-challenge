@@ -76,23 +76,7 @@ func SMTPPort() int {
 	return c.SMTP.Port
 }
 
-/*
-// SetConfigs set configs
-func SetConfigs(Host string, DbName string, User string, Password string, Migrate bool) error {
-
-	c.Database.Host = Host
-	c.Database.DbName = DbName
-	c.Database.User = User
-	c.Database.Password = Password
-	c.Migrate = Migrate
-
-	c.CurrencyLayerAPIKEY = "test"
-
-	err := ReadConfig()
-	if err != nil {
-		return err
-	}
-
-	return nil
+// EnableMigrations get enable migrations
+func EnableMigrations() bool {
+	return c.Migrate
 }
-*/

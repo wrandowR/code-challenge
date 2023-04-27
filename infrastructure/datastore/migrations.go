@@ -23,7 +23,7 @@ func DoMigration() {
 		panic(err)
 	}
 	dir = formatDir(dir)
-	sourcedir := "file://" + path.Join(dir, "/infrastructure/datastore/migrations")
+	sourcedir := path.Join(dir, "/infrastructure/datastore/migrations")
 
 	migration, err := migrate.New(sourcedir, *pgconn)
 	if err != nil {
@@ -53,7 +53,7 @@ func undoMigration() {
 		panic(err)
 	}
 	dir = formatDir(dir)
-	sourcedir := "file://" + path.Join(dir, "/infrastructure/datastore/migrations")
+	sourcedir := path.Join(dir, "/infrastructure/datastore/migrations")
 
 	migration, err := migrate.New(sourcedir, *pgconn)
 	if err != nil {
