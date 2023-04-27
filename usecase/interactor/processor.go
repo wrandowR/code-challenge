@@ -144,7 +144,6 @@ func (s *fileProcessor) ProccesFile(filename string) error {
 	return nil
 }
 
-// funcion que tetorna si un string de numer so es negativo o positivos
 func isNegative(s string) bool {
 	return s[0] == '-'
 }
