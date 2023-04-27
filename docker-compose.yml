@@ -25,7 +25,7 @@ services:
       SMTP_USER: ""
       SMTP_PASSWORD: ""
       MIGRATE: "true"
-      FROM_EMAIL: "huffyh00@hotmail.com"
+      FROM_EMAIL: "fromemail@test.com"
     ports:
       - "8080:8080"
     depends_on:
@@ -33,4 +33,4 @@ services:
     links:
       - db  
     volumes:
-    - ./transactions.csv:/app/transactions.csv
+    - ./transactions.csv:/app/transactions.csv 
