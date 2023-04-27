@@ -2,7 +2,6 @@ package service
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"os"
 	"path"
@@ -41,9 +40,7 @@ func (s *emailSender) SendEmail(email string, data *model.TransactionEmail) erro
 
 	m.SetBody("text/html", parseTemplate)
 
-	//Datos aca para el smtp de email
-	fmt.Println(config.SMTPHost(), config.SMTPPort(), config.MaxGoroutines(), "data")
-	d := gomail.NewDialer("smtp.freesmtpservers.com", 25, "", "")
+	d := gomail.NewDialer(config.SMTPHost(), config.SMTPPort(), "", "")
 
 	if err := d.DialAndSend(m); err != nil {
 		return merry.Wrap(err)
